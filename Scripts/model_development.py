@@ -42,6 +42,8 @@ for county in data["County"]:
         county_data["WaterYear"].iloc[-1] + 1 + predict_years,
     )
     pred_vals = pred.predicted_mean
+    pred_ci = pred.conf_int()
+
     # Create a forecast index based on the DateTime index
     pred_index = pd.date_range(
         start=county_data.index[-1] + pd.DateOffset(years=1),
@@ -49,13 +51,19 @@ for county in data["County"]:
         freq="AS-OCT",
     )
 
-    # Combine forecast values with the index
-    rainfall_forecast_series = pd.Series(pred_vals.values, index=pred_index)
+    #Creates a pd series with the dates as the index
+    forecast_series = pd.Series(pred_vals.values, index=pred_index)
+
+    #Change the indicies of the CI dataframe to the dates
+    forecast_ci = pred_ci.rename(index=dict(zip(range(603,623),pred_index)))
+
+    #combine the forecast series and confidence interval
+    rainfall_forecast_series = pd.concat([forecast_series, forecast_ci], axis=1)
 
     with open(f"../County_Forecasts/{county}_forecast.txt", "w") as f:
         f.write(f"Precipitation Forecast for {county} County:\n")
-        for date, value in rainfall_forecast_series.items():
-            f.write(f"{date.strftime('%Y-%m-%d')}: {value:.2f} inches\n")
+        for row in rainfall_forecast_series.itertuples():
+            f.write(f"{row[0].strftime('%Y-%m-%d')}: Prediction: {row[1]:.2f} inches, Lower {row[2]:.2f} inches, Upper: {row[3]:.2f} inches\n")
 
     print(
         f"Forecast for {county} County saved to county_forecasts/{county}_forecast.txt"

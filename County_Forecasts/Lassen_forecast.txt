@@ -1,21 +1,21 @@
 Precipitation Forecast for Lassen County:
-2024-10-01: 34.29 inches
-2025-10-01: 39.50 inches
-2026-10-01: 40.26 inches
-2027-10-01: 43.29 inches
-2028-10-01: 34.59 inches
-2029-10-01: 38.27 inches
-2030-10-01: 42.07 inches
-2031-10-01: 43.79 inches
-2032-10-01: 34.78 inches
-2033-10-01: 38.65 inches
-2034-10-01: 39.22 inches
-2035-10-01: 42.89 inches
-2036-10-01: 34.25 inches
-2037-10-01: 39.53 inches
-2038-10-01: 40.30 inches
-2039-10-01: 43.33 inches
-2040-10-01: 34.63 inches
-2041-10-01: 38.30 inches
-2042-10-01: 42.11 inches
-2043-10-01: 43.83 inches
+2024-10-01: Prediction: 34.29 inches, Lower 2.04 inches, Upper: 66.54 inches
+2025-10-01: Prediction: 39.50 inches, Lower 6.47 inches, Upper: 72.53 inches
+2026-10-01: Prediction: 40.26 inches, Lower 6.58 inches, Upper: 73.95 inches
+2027-10-01: Prediction: 43.29 inches, Lower 9.00 inches, Upper: 77.59 inches
+2028-10-01: Prediction: 34.59 inches, Lower -0.31 inches, Upper: 69.50 inches
+2029-10-01: Prediction: 38.27 inches, Lower 2.75 inches, Upper: 73.78 inches
+2030-10-01: Prediction: 42.07 inches, Lower 5.96 inches, Upper: 78.18 inches
+2031-10-01: Prediction: 43.79 inches, Lower 7.09 inches, Upper: 80.49 inches
+2032-10-01: Prediction: 34.78 inches, Lower -2.50 inches, Upper: 72.05 inches
+2033-10-01: Prediction: 38.65 inches, Lower 0.45 inches, Upper: 76.84 inches
+2034-10-01: Prediction: 39.22 inches, Lower 0.41 inches, Upper: 78.03 inches
+2035-10-01: Prediction: 42.89 inches, Lower 3.93 inches, Upper: 81.85 inches
+2036-10-01: Prediction: 34.25 inches, Lower -5.77 inches, Upper: 74.28 inches
+2037-10-01: Prediction: 39.53 inches, Lower -1.12 inches, Upper: 80.19 inches
+2038-10-01: Prediction: 40.30 inches, Lower -0.96 inches, Upper: 81.56 inches
+2039-10-01: Prediction: 43.33 inches, Lower 1.49 inches, Upper: 85.17 inches
+2040-10-01: Prediction: 34.63 inches, Lower -7.79 inches, Upper: 77.05 inches
+2041-10-01: Prediction: 38.30 inches, Lower -4.69 inches, Upper: 81.29 inches
+2042-10-01: Prediction: 42.11 inches, Lower -1.45 inches, Upper: 85.67 inches
+2043-10-01: Prediction: 43.83 inches, Lower -0.29 inches, Upper: 87.95 inches
