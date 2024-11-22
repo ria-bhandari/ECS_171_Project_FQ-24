@@ -16,10 +16,6 @@ data = data[~data.index.duplicated(keep="first")].sort_index()
 # Set frequency by resampling to ensure consistency, filling missing dates if needed
 data = data.resample("YS-OCT").asfreq()
 
-# Ensure the forecast directory exists
-# output_dir = "../County_Forecasts"
-# os.makedirs(output_dir, exist_ok=True)
-
 # Loop through each unique county and create a model
 for county in data["County"].unique():
 
