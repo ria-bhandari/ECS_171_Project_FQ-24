@@ -8,6 +8,7 @@ from xgboost import XGBRegressor
 from sklearn.model_selection import train_test_split
 from scipy.fft import fft
 from dateutil.relativedelta import relativedelta
+from sklearn.metrics import mean_absolute_error, mean_squared_error
 import os
 
 #Define a function that offsets all repeating WaterYear values
@@ -38,7 +39,7 @@ data = pd.read_csv('./Data/final_data_temp.csv')
 data["Date"] = pd.to_datetime(data["WaterYear"].astype(str) + "-10-01")
 data.set_index("Date", inplace=True)
 grouped_data = data.groupby("StationName ")
-
+'''
 # Ensure the forecast directory exists
 #output_dir = "../Station_Forecasts"
 #os.makedirs(output_dir, exist_ok=True)
@@ -111,7 +112,6 @@ for station in list(grouped_data):
         f"Forecast for {station_name} Station saved to ../Station_Forecasts/{station_name}_forecast.txt"
     )
 
-'''
 Note: Certain collection locations have inaccurate or flat-out wrong SARIMAX Predictions:
 
 Ball Mountain (negative values)
@@ -130,3 +130,87 @@ Three Mile Valley (very high values)
 
 There are also some where the MLE failed to converge
 '''
+# Creating lag features for time-series data
+def create_lag_features(data, lag_steps=1):
+    for i in range(1, lag_steps + 1):
+        data[f'lag_{i}'] = data["TotalPrecipitation_inches"].shift(i)
+    return data
+
+# Creating rolling mean for time-series data
+def create_rolling_mean(data, window_size=3):
+    data['rolling_mean'] = data["TotalPrecipitation_inches"].rolling(window=window_size).mean()
+    return data
+
+# Applying Fourier transformation for capturing seasonality
+def apply_fourier_transform(data):
+    values = data['TotalPrecipitation_inches'].values
+    fourier_transform = fft(values)
+    data['fourier_transform'] = np.abs(fourier_transform)
+    return data
+
+errors_list = []
+predictions_list = []
+for station in list(grouped_data):
+    station_maes = []
+    station_rmses = []
+
+    station_name = station[0]
+    station = station[1]
+    # Resample Station data to ensure consistent frequency and fill any missing dates
+    station = duplicate_years(station)
+    station = station.dropna()
+    station.index = pd.to_datetime(station["WaterYear"].astype(str) + "-10-01")
+    try:
+        station = station.resample("YS-OCT").asfreq()
+    except:
+        print(station.to_string())
+
+    # Applying lag feature creation to the dataset
+    station = create_lag_features(station, lag_steps = 3)
+    # Applying rolling mean to the dataset
+    station = create_rolling_mean(station, window_size = 5)
+    station = apply_fourier_transform(station)
+
+    #X1 = station[['lag_1', 'lag_2', 'lag_3']]
+    X2 = station['rolling_mean'] #We picked the rolling mean because precipitation data is susceptible to unnecessary trends (record high/low rainfall years)
+    #X3 = station['fourier_transform']
+    y = station['TotalPrecipitation_inches']
+
+    X_train, X_test, y_train, y_test = train_test_split(X2, y, test_size=0.2, shuffle=False)
+
+    param_grid = {
+    'learning_rate': [0.01, 0.05, 0.1],
+    'max_depth': [3, 5, 7],
+    'subsample': [0.6, 0.8, 1.0]
+    }
+    grid_search = GridSearchCV(XGBRegressor(), param_grid, cv=3)
+    grid_search.fit(X_train, y_train)
+    best_params = grid_search.best_params_
+
+    # Training the XGBoost model
+    xgb_model = XGBRegressor(**best_params)
+    xgb_model.fit(X_train, y_train)
+
+    # Evaluating the XGBoost model on the testing set
+    predictions = xgb_model.predict(X_test)
+    mae = mean_absolute_error(y_test, predictions)
+    rmse = np.sqrt(mean_squared_error(y_test, predictions))
+
+    errors_list.append([mae, rmse])
+
+    plt.plot(y_train.values, label='Training', color = 'green', alpha = 0.8)
+
+    # Plot actual values
+    plt.plot(y_test.values, label='Actual', color='blue', alpha=0.8)
+
+    # Plot predicted values
+    plt.plot(predictions, label='Prediction', color='orange', alpha=0.8)
+
+    plt.xlabel('Time')
+    plt.ylabel('Rainfall')
+    plt.title('Rainfall Predictions')
+    plt.legend()
+    plt.show()
+
+new_df = pd.DataFrame(errors_list, columns = ['mae', 'rmse'])
+print(new_df)
