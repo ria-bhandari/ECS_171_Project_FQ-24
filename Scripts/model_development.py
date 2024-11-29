@@ -1,7 +1,9 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 from statsmodels.tsa.statespace.sarimax import SARIMAX
+from sklearn.metrics import mean_absolute_error, r2_score, mean_squared_error
 import os
+import numpy as np
 
 # Load data
 data = pd.read_csv("../Data/final_data.csv")
@@ -15,6 +17,9 @@ data = data[~data.index.duplicated(keep="first")].sort_index()
 
 # Set frequency by resampling to ensure consistency, filling missing dates if needed
 data = data.resample("YS-OCT").asfreq()
+
+# Initialize list to save model metrics
+model_metrics = []
 
 # Loop through each unique county and create a model
 for county in data["County"].unique():
@@ -40,6 +45,22 @@ for county in data["County"].unique():
     pred = sarima_model.get_forecast(steps=predict_years)
     pred_vals = pred.predicted_mean
     pred_ci = pred.conf_int()
+
+    # Calculate MAE and RMSE and R^2 on the training data
+
+    # Determine the starting point dynamically for the data
+    start_idx = max(0, min(12, len(county_data) - 1))
+    historical_f = sarima_model.get_prediction(
+        start=county_data.index[start_idx], dynamic=False
+    )
+    historical_pred = historical_f.predicted_mean
+    historical_actual_f = county_data["TotalPrecipitation_inches"].iloc[start_idx:]
+    mae = mean_absolute_error(historical_actual_f, historical_pred)
+    mse = mean_squared_error(historical_actual_f, historical_pred)
+    rmse = np.sqrt(mse)
+
+    # Append these metrics to a list
+    model_metrics.append({"County": county, "MAE": mae, "MSE": mse, "RMSE": rmse})
 
     # Create a forecast index based on the last known date and desired frequency
     pred_index = pd.date_range(
@@ -76,3 +97,8 @@ for county in data["County"].unique():
     print(
         f"Forecast for {county} County saved to ../County_Forecasts/{county}_forecast.txt"
     )
+
+# Save metrics to a CSV file and print them
+metrics_df = pd.DataFrame(model_metrics)
+metrics_df.to_csv("../County_Forecasts/evaluation_metrics_time_series.csv", index=False)
+print(metrics_df)
