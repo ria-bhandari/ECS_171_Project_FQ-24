@@ -58,9 +58,12 @@ for county in data["County"].unique():
     mae = mean_absolute_error(historical_actual_f, historical_pred)
     mse = mean_squared_error(historical_actual_f, historical_pred)
     rmse = np.sqrt(mse)
+    r2 = r2_score(historical_actual_f, historical_pred)
 
     # Append these metrics to a list
-    model_metrics.append({"County": county, "MAE": mae, "MSE": mse, "RMSE": rmse})
+    model_metrics.append(
+        {"County": county, "MAE": mae, "MSE": mse, "RMSE": rmse, "R2": r2}
+    )
 
     # Create a forecast index based on the last known date and desired frequency
     pred_index = pd.date_range(
